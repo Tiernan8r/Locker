@@ -1,0 +1,12 @@
+main: me.Tiernanator.Locker.Main
+version: 2.0
+name: Locker
+description: Lock all the things!
+load: POSTWORLD
+author: Tiernanator
+website: None
+database: false
+depend: [Utilities, Zoning]
+prefix: Lock
+softdepend: []
+loadbefore: []
