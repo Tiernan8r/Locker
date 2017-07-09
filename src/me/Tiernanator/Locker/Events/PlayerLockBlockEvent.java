@@ -17,20 +17,20 @@ import org.bukkit.inventory.ItemStack;
 
 import me.Tiernanator.Colours.Colour;
 import me.Tiernanator.Locker.LockedBlock;
-import me.Tiernanator.Locker.Main;
+import me.Tiernanator.Locker.LockerMain;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
 import me.Tiernanator.Zoning.Zone.Zone;
 
 @SuppressWarnings("deprecation")
 public class PlayerLockBlockEvent implements Listener {
 
-	private static Main plugin;
+	private static LockerMain plugin;
 	private ChatColor warning = Colour.WARNING.getColour();
 	private ChatColor informative = Colour.INFORMATIVE.getColour();
 	private ChatColor good = Colour.GOOD.getColour();
 	private ChatColor highlight = Colour.HIGHLIGHT.getColour();
 
-	public PlayerLockBlockEvent(Main main) {
+	public PlayerLockBlockEvent(LockerMain main) {
 		plugin = main;
 	}
 

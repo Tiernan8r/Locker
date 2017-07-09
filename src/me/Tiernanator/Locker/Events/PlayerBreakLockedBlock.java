@@ -9,16 +9,16 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 import me.Tiernanator.Colours.Colour;
 import me.Tiernanator.Locker.LockedBlock;
-import me.Tiernanator.Locker.Main;
+import me.Tiernanator.Locker.LockerMain;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
 
 public class PlayerBreakLockedBlock implements Listener {
 
 	@SuppressWarnings("unused")
-	private static Main plugin;
+	private static LockerMain plugin;
 	private ChatColor warning = Colour.WARNING.getColour();
 
-	public PlayerBreakLockedBlock(Main main) {
+	public PlayerBreakLockedBlock(LockerMain main) {
 		plugin = main;
 	}
 

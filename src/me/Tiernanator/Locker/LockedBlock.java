@@ -1,29 +1,26 @@
 package me.Tiernanator.Locker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
+import me.Tiernanator.SQL.SQLServer;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
+import me.Tiernanator.Utilities.Players.GetPlayer;
 import me.Tiernanator.Utilities.Players.PlayerLogger;
 
 public class LockedBlock {
 
-	private static Main plugin;
+	private static LockerMain plugin;
 
-	public static void setPlugin(Main main) {
+	public static void setPlugin(LockerMain main) {
 		plugin = main;
 	}
 
@@ -162,48 +159,8 @@ public class LockedBlock {
 		String query = "SELECT ID FROM Blocks WHERE " + "World = '" + world
 				+ "' AND " + "X = '" + x + "' AND " + "Y = '" + y + "' AND "
 				+ "Z = '" + z + "';";
+		int index = SQLServer.getInt(query, "ID");
 
-		Connection connection = Main.getSQL().getConnection();
-		Statement statement = null;
-		try {
-			statement = connection.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		ResultSet resultSet = null;
-		try {
-			resultSet = statement.executeQuery(query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			if (!resultSet.isBeforeFirst()) {
-				return -1;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			resultSet.next();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		int index = -1;
-		try {
-			index = resultSet.getInt("ID");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			statement.closeOnCompletion();
-			resultSet.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
 		return index;
 	}
 
@@ -215,6 +172,7 @@ public class LockedBlock {
 			return false;
 		}
 		Location blockLocation = block.getLocation();
+
 		int x = blockLocation.getBlockX();
 		int y = blockLocation.getBlockY();
 		int z = blockLocation.getBlockZ();
@@ -224,59 +182,13 @@ public class LockedBlock {
 				+ "' AND " + "X = '" + x + "' AND " + "Y = '" + y + "' AND "
 				+ "Z = '" + z + "';";
 
-		Connection connection = Main.getSQL().getConnection();
-		Statement statement = null;
-		try {
-			statement = connection.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		ResultSet resultSet = null;
-		try {
-			resultSet = statement.executeQuery(query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			if (!resultSet.isBeforeFirst()) {
-				return false;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			resultSet.next();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		World thisWorld = null;
-		int thisX = 0;
-		int thisY = 0;
-		int thisZ = 0;
+		Location storedLocation = SQLServer.getLocation(query);
 
-		Location thisBlockLocation = null;
-
-		try {
-			String worldName = resultSet.getString("World");
-			thisWorld = plugin.getServer().getWorld(worldName);
-
-			thisX = resultSet.getInt("X");
-			thisY = resultSet.getInt("Y");
-			thisZ = resultSet.getInt("Z");
-
-			thisBlockLocation = new Location(thisWorld, thisX, thisY, thisZ);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			statement.closeOnCompletion();
-			resultSet.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if (storedLocation == null) {
+			return false;
 		}
 
-		return thisBlockLocation.equals(blockLocation);
+		return storedLocation.equals(blockLocation);
 	}
 
 	public static boolean canBlockInteract(Block block, Player player) {
@@ -296,168 +208,35 @@ public class LockedBlock {
 				+ "' AND " + "X = '" + x + "' AND " + "Y = '" + y + "' AND "
 				+ "Z = '" + z + "';";
 
-		Connection connection = Main.getSQL().getConnection();
-		Statement statement = null;
-		try {
-			statement = connection.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		ResultSet resultSet = null;
-		try {
-			resultSet = statement.executeQuery(query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		String playersString = SQLServer.getString(query, "Players");
 
-		try {
-			if (!resultSet.isBeforeFirst()) {
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			resultSet.next();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		String playersString = "";
-		try {
-			playersString = resultSet.getString("Players");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		String[] UUIDs = playersString.split(", ");
 
 		List<String> allowedPlayers = new ArrayList<String>();
-		OfflinePlayer[] allPlayers = plugin.getServer().getOfflinePlayers();
-		for (OfflinePlayer offlinePlayer : allPlayers) {
-			if (playersString
-					.contains(offlinePlayer.getUniqueId().toString())) {
+		for (String UUID : UUIDs) {
+			OfflinePlayer offlinePlayer = GetPlayer
+					.getOfflinePlayerByUUID(UUID);
+			if (offlinePlayer != null) {
 				allowedPlayers.add(offlinePlayer.getName());
 			}
 		}
-
-		try {
-			statement.closeOnCompletion();
-			resultSet.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
 		return allowedPlayers.contains(player.getName());
 	}
 
 	public static void addLockedBlock(int x, int y, int z, String world,
 			List<String> playersUUIDs) {
 
-		BukkitRunnable runnable = new BukkitRunnable() {
-			
-			@Override
-			public void run() {
-				
-				String playerString = "";
-				for (int i = 0; i < playersUUIDs.size(); i++) {
-					playerString += playersUUIDs.get(i);
-					if (!(i + 1 >= playersUUIDs.size())) {
-						playerString += ", ";
-					}
-				}
-
-				Connection connection = Main.getSQL().getConnection();
-				PreparedStatement preparedStatement = null;
-				try {
-					preparedStatement = connection.prepareStatement(
-							"INSERT INTO Blocks (World, X, Y, Z, Players) VALUES (?, ?, ?, ?, ?);");
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					preparedStatement.setString(1, world);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					preparedStatement.setInt(2, x);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					preparedStatement.setInt(3, y);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					preparedStatement.setInt(4, z);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					preparedStatement.setString(5, playerString);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					preparedStatement.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					preparedStatement.closeOnCompletion();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+		String playerString = "";
+		for (int i = 0; i < playersUUIDs.size(); i++) {
+			playerString += playersUUIDs.get(i);
+			if (!(i + 1 >= playersUUIDs.size())) {
+				playerString += ", ";
 			}
-		};
-		runnable.runTaskAsynchronously(plugin);
-		
-//		String playerString = "";
-//		for (int i = 0; i < playersUUIDs.size(); i++) {
-//			playerString += playersUUIDs.get(i);
-//			if (!(i + 1 >= playersUUIDs.size())) {
-//				playerString += ", ";
-//			}
-//		}
-//
-//		Connection connection = Main.getSQL().getConnection();
-//		PreparedStatement preparedStatement = null;
-//		try {
-//			preparedStatement = connection.prepareStatement(
-//					"INSERT INTO Blocks (World, X, Y, Z, Players) VALUES (?, ?, ?, ?, ?);");
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			preparedStatement.setString(1, world);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			preparedStatement.setInt(2, x);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			preparedStatement.setInt(3, y);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			preparedStatement.setInt(4, z);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			preparedStatement.setString(5, playerString);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			preparedStatement.executeUpdate();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
+		}
+
+		String statement = "INSERT INTO Blocks (World, X, Y, Z, Players) VALUES (?, ?, ?, ?, ?);";
+		Object[] values = new Object[]{world, x, y, z, playerString};
+		SQLServer.executePreparedStatement(statement, values);
 
 	}
 
@@ -477,82 +256,18 @@ public class LockedBlock {
 
 	public static List<String> getAllowedPlayers(Block block) {
 
-//		block = MultiBlocks.getCorrectBlock(block);
-//
-//		if (!isLockableBlock(block)) {
-//			return null;
-//		}
-//		Location blockLocation = block.getLocation();
-//		int x = blockLocation.getBlockX();
-//		int y = blockLocation.getBlockY();
-//		int z = blockLocation.getBlockZ();
-//		String world = blockLocation.getWorld().getName();
-//
-//		String query = "SELECT Players FROM Blocks WHERE " + "World = '" + world
-//				+ "' AND " + "X = '" + x + "' AND " + "Y = '" + y + "' AND "
-//				+ "Z = '" + z + "';";
-//
-//		Connection connection = Main.getSQL().getConnection();
-//		Statement statement = null;
-//		try {
-//			statement = connection.createStatement();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		ResultSet resultSet = null;
-//		try {
-//			resultSet = statement.executeQuery(query);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//
-//		try {
-//			if (!resultSet.isBeforeFirst()) {
-//				return null;
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			resultSet.next();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//
-//		String playersString = "";
-//		try {
-//			playersString = resultSet.getString("Players");
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		playersString = playersString.replaceAll(", ", " ");
-//
-//		try {
-//			statement.closeOnCompletion();
-//			resultSet.close();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
 		List<String> playerUUIDs = getAllowedPlayersUUIDs(block);
-		if(playerUUIDs == null) {
+		if (playerUUIDs == null) {
 			return null;
 		}
 		List<String> playerNames = new ArrayList<String>();
 		PlayerLogger playerLogger = new PlayerLogger();
-		for(String uuid : playerUUIDs) {
+		for (String uuid : playerUUIDs) {
 			String playerName = playerLogger.getPlayerNameByUUID(uuid);
 			playerNames.add(playerName);
 		}
 		return playerNames;
-//		List<String> allowedPlayers = new ArrayList<String>();
-//		OfflinePlayer[] allPlayers = plugin.getServer().getOfflinePlayers();
-//		for (OfflinePlayer offlinePlayer : allPlayers) {
-//			if (playersString
-//					.contains(offlinePlayer.getUniqueId().toString())) {
-//				allowedPlayers.add(offlinePlayer.getName());
-//			}
-//		}
-//		return allowedPlayers;
+
 	}
 
 	public static List<String> getAllowedPlayersUUIDs(Block block) {
@@ -572,60 +287,24 @@ public class LockedBlock {
 				+ "' AND " + "X = '" + x + "' AND " + "Y = '" + y + "' AND "
 				+ "Z = '" + z + "';";
 
-		Connection connection = Main.getSQL().getConnection();
-		Statement statement = null;
-		try {
-			statement = connection.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		ResultSet resultSet = null;
-		try {
-			resultSet = statement.executeQuery(query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		String playersString = SQLServer.getString(query, "Players");
 
-		try {
-			if (!resultSet.isBeforeFirst()) {
-				return null;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			resultSet.next();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		String playersString = "";
-		try {
-			playersString = resultSet.getString("Players");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			statement.closeOnCompletion();
-			resultSet.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		playersString = playersString.replaceAll(", ", " ");
-
+		String[] playerUUIDs = playersString.split(", ");
 		List<String> allowedPlayers = new ArrayList<String>();
-		OfflinePlayer[] allPlayers = plugin.getServer().getOfflinePlayers();
-		for (OfflinePlayer offlinePlayer : allPlayers) {
-			if (playersString
-					.contains(offlinePlayer.getUniqueId().toString())) {
-				allowedPlayers.add(offlinePlayer.getUniqueId().toString());
+		List<String> offlinePlayerUUIDs = new ArrayList<String>();
+		for (OfflinePlayer offlinePlayer : Bukkit.getServer()
+				.getOfflinePlayers()) {
+			offlinePlayerUUIDs.add(offlinePlayer.getUniqueId().toString());
+		}
+		for (String playerUUID : playerUUIDs) {
+			if (offlinePlayerUUIDs.contains(playerUUID)) {
+				allowedPlayers.add(playerUUID);
 			}
 		}
+
 		return allowedPlayers;
 	}
-	
+
 	public static void setAllowedPlayers(Block block,
 			List<String> allowedPlayersUUIDs) {
 
@@ -635,85 +314,28 @@ public class LockedBlock {
 		if (!isLockableBlock(block)) {
 			return;
 		}
-		
-		BukkitRunnable runnable = new BukkitRunnable() {
-			
-			@Override
-			public void run() {
-				
-				String allowedPlayersUUIDsString = "";
-				for (int i = 0; i < allowedPlayersUUIDs.size(); i++) {
-					allowedPlayersUUIDsString += allowedPlayersUUIDs.get(i);
-					if (!(i + 1 >= allowedPlayersUUIDs.size())) {
-						allowedPlayersUUIDsString += ", ";
-					}
-				}
 
-				Location blockLocation = correctBlock.getLocation();
-				int x = blockLocation.getBlockX();
-				int y = blockLocation.getBlockY();
-				int z = blockLocation.getBlockZ();
-				String world = blockLocation.getWorld().getName();
-
-				String query = "UPDATE Blocks " + "SET Players = '"
-						+ allowedPlayersUUIDsString + "'" + " WHERE " + "World = '"
-						+ world + "' AND " + "X = '" + x + "' AND " + "Y = '" + y
-						+ "' AND " + "Z = '" + z + "';";
-
-				Connection connection = Main.getSQL().getConnection();
-				Statement statement = null;
-				try {
-					statement = connection.createStatement();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					statement.execute(query);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					statement.closeOnCompletion();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				
+		String allowedPlayersUUIDsString = "";
+		for (int i = 0; i < allowedPlayersUUIDs.size(); i++) {
+			allowedPlayersUUIDsString += allowedPlayersUUIDs.get(i);
+			if (!(i + 1 >= allowedPlayersUUIDs.size())) {
+				allowedPlayersUUIDsString += ", ";
 			}
-		};
-		runnable.runTaskAsynchronously(plugin);
-		
-//		String allowedPlayersUUIDsString = "";
-//		for (int i = 0; i < allowedPlayersUUIDs.size(); i++) {
-//			allowedPlayersUUIDsString += allowedPlayersUUIDs.get(i);
-//			if (!(i + 1 >= allowedPlayersUUIDs.size())) {
-//				allowedPlayersUUIDsString += ", ";
-//			}
-//		}
-//
-//		Location blockLocation = block.getLocation();
-//		int x = blockLocation.getBlockX();
-//		int y = blockLocation.getBlockY();
-//		int z = blockLocation.getBlockZ();
-//		String world = blockLocation.getWorld().getName();
-//
-//		String query = "UPDATE Blocks " + "SET Players = '"
-//				+ allowedPlayersUUIDsString + "'" + " WHERE " + "World = '"
-//				+ world + "' AND " + "X = '" + x + "' AND " + "Y = '" + y
-//				+ "' AND " + "Z = '" + z + "';";
-//
-//		Connection connection = Main.getSQL().getConnection();
-//		Statement statement = null;
-//		try {
-//			statement = connection.createStatement();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			statement.execute(query);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		return true;
+		}
+
+		Location blockLocation = correctBlock.getLocation();
+		int x = blockLocation.getBlockX();
+		int y = blockLocation.getBlockY();
+		int z = blockLocation.getBlockZ();
+		String world = blockLocation.getWorld().getName();
+
+		String statement = "UPDATE Blocks "
+				+ "SET Players = ? WHERE World = ? AND X = ? AND Y = ? AND Z = ?;";
+		Object[] values = new Object[]{allowedPlayersUUIDsString, world, x, y,
+				z};
+
+		SQLServer.executePreparedStatement(statement, values);
+
 	}
 
 	public static void removeAllowedPlayers(Block block,
@@ -733,61 +355,15 @@ public class LockedBlock {
 		World blockWorld = plugin.getServer().getWorld(world);
 		Location location = new Location(blockWorld, x, y, z);
 		Block block = location.getBlock();
-		if(!blockIsLocked(block)) {
+		if (!blockIsLocked(block)) {
 			return;
 		}
+
+		String statement = "DELETE FROM Blocks WHERE WORLD = ? AND X = ? AND Y = ? AND Z = ?;";
+		Object[] values = new Object[] {world, x, y, z};
 		
-		BukkitRunnable runnable = new BukkitRunnable() {
-			
-			@Override
-			public void run() {
-				
-				String query = "DELETE FROM Blocks "
-						+ "WHERE WORLD = '" + world + "' AND "
-						+ "X = '" + x + "' AND "
-						+ "Y = '" + y + "' AND "
-						+ "Z = '" + z + "';"; 
-				
-				Connection connection = Main.getSQL().getConnection();
-				Statement statement = null;
-				try {
-					statement = connection.createStatement();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					statement.execute(query);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					statement.closeOnCompletion();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				
-			}
-		};
-		runnable.runTaskAsynchronously(plugin);
+		SQLServer.executePreparedStatement(statement, values);
 		
-//		String query = "DELETE FROM Blocks "
-//				+ "WHERE WORLD = '" + world + "' AND "
-//				+ "X = '" + x + "' AND "
-//				+ "Y = '" + y + "' AND "
-//				+ "Z = '" + z + "';"; 
-//		
-//		Connection connection = Main.getSQL().getConnection();
-//		Statement statement = null;
-//		try {
-//			statement = connection.createStatement();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			statement.execute(query);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	public static void removeLockedBlock(Location location) {
@@ -805,4 +381,5 @@ public class LockedBlock {
 				location.getBlockZ(), location.getWorld().getName());
 
 	}
+
 }

@@ -13,17 +13,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import me.Tiernanator.Colours.Colour;
 import me.Tiernanator.Locker.LockedBlock;
-import me.Tiernanator.Locker.Main;
+import me.Tiernanator.Locker.LockerMain;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
 
 public class PlayerLockedBlockInteract implements Listener {
 
 	@SuppressWarnings("unused")
-	private static Main plugin;
+	private static LockerMain plugin;
 	private ChatColor warning = Colour.WARNING.getColour();
 	private ChatColor informative = Colour.INFORMATIVE.getColour();
 
-	public PlayerLockedBlockInteract(Main main) {
+	public PlayerLockedBlockInteract(LockerMain main) {
 		plugin = main;
 	}
 

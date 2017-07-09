@@ -1,4 +1,4 @@
-main: me.Tiernanator.Locker.Main
+main: me.Tiernanator.Locker.LockerMain
 version: 2.0
 name: Locker
 description: Lock all the things!
