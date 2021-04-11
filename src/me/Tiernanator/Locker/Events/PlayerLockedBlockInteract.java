@@ -11,10 +11,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import me.Tiernanator.Colours.Colour;
 import me.Tiernanator.Locker.LockedBlock;
 import me.Tiernanator.Locker.LockerMain;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
+import me.Tiernanator.Utilities.Colours.Colour;
 
 public class PlayerLockedBlockInteract implements Listener {
 
@@ -27,6 +27,7 @@ public class PlayerLockedBlockInteract implements Listener {
 		plugin = main;
 	}
 
+	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void playerBlockInteract(PlayerInteractEvent event) {
 

@@ -11,10 +11,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import me.Tiernanator.SQL.SQLServer;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
 import me.Tiernanator.Utilities.Players.GetPlayer;
 import me.Tiernanator.Utilities.Players.PlayerLogger;
+import me.Tiernanator.Utilities.SQL.SQLServer;
 
 public class LockedBlock {
 
@@ -24,6 +24,7 @@ public class LockedBlock {
 		plugin = main;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static boolean isLockableBlock(Block block) {
 
 		block = MultiBlocks.getCorrectBlock(block);
@@ -44,7 +45,7 @@ public class LockedBlock {
 				return true;
 			case BEACON :
 				return true;
-			case BED_BLOCK :
+			case LEGACY_BED_BLOCK :
 				return true;
 			case BIRCH_DOOR :
 				return true;
@@ -52,17 +53,17 @@ public class LockedBlock {
 				return true;
 			case BREWING_STAND :
 				return true;
-			case CAKE_BLOCK :
+			case LEGACY_CAKE_BLOCK :
 				return true;
 			case CHEST :
 				return true;
-			case COMMAND :
+			case LEGACY_COMMAND :
 				return true;
-			case COMMAND_CHAIN :
+			case LEGACY_COMMAND_CHAIN :
 				return true;
-			case COMMAND_MINECART :
+			case LEGACY_COMMAND_MINECART :
 				return true;
-			case COMMAND_REPEATING :
+			case LEGACY_COMMAND_REPEATING :
 				return true;
 			case DARK_OAK_DOOR :
 				return true;
@@ -70,11 +71,11 @@ public class LockedBlock {
 				return true;
 			case DAYLIGHT_DETECTOR :
 				return true;
-			case DAYLIGHT_DETECTOR_INVERTED :
+			case LEGACY_DAYLIGHT_DETECTOR_INVERTED :
 				return true;
-			case DIODE_BLOCK_OFF :
+			case LEGACY_DIODE_BLOCK_OFF :
 				return true;
-			case DIODE_BLOCK_ON :
+			case LEGACY_DIODE_BLOCK_ON :
 				return true;
 			case DISPENSER :
 				return true;
@@ -82,11 +83,11 @@ public class LockedBlock {
 				return true;
 			case DROPPER :
 				return true;
-			case ENCHANTMENT_TABLE :
+			case LEGACY_ENCHANTMENT_TABLE :
 				return true;
 			case ENDER_CHEST :
 				return true;
-			case FENCE_GATE :
+			case LEGACY_FENCE_GATE :
 				return true;
 			case FURNACE :
 				return true;
@@ -106,11 +107,11 @@ public class LockedBlock {
 				return true;
 			case NOTE_BLOCK :
 				return true;
-			case REDSTONE_COMPARATOR :
+			case LEGACY_REDSTONE_COMPARATOR :
 				return true;
-			case REDSTONE_COMPARATOR_OFF :
+			case LEGACY_REDSTONE_COMPARATOR_OFF :
 				return true;
-			case REDSTONE_COMPARATOR_ON :
+			case LEGACY_REDSTONE_COMPARATOR_ON :
 				return true;
 			case SPRUCE_DOOR :
 				return true;
@@ -118,19 +119,19 @@ public class LockedBlock {
 				return true;
 			case STONE_BUTTON :
 				return true;
-			case STONE_PLATE :
+			case LEGACY_STONE_PLATE :
 				return true;
 			case STRUCTURE_BLOCK :
 				return true;
 			case TRAPPED_CHEST :
 				return true;
-			case TRAP_DOOR :
+			case LEGACY_TRAP_DOOR :
 				return true;
-			case WOOD_BUTTON :
+			case LEGACY_WOOD_BUTTON :
 				return true;
-			case WOODEN_DOOR :
+			case LEGACY_WOODEN_DOOR :
 				return true;
-			case WOOD_PLATE :
+			case LEGACY_WOOD_PLATE :
 				return true;
 			default :
 				return false;
@@ -261,9 +262,8 @@ public class LockedBlock {
 			return null;
 		}
 		List<String> playerNames = new ArrayList<String>();
-		PlayerLogger playerLogger = new PlayerLogger();
 		for (String uuid : playerUUIDs) {
-			String playerName = playerLogger.getPlayerNameByUUID(uuid);
+			String playerName = PlayerLogger.getPlayerNameByUUID(uuid);
 			playerNames.add(playerName);
 		}
 		return playerNames;

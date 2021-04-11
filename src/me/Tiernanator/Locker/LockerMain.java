@@ -6,7 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.Tiernanator.Locker.Events.PlayerBreakLockedBlock;
 import me.Tiernanator.Locker.Events.PlayerLockBlockEvent;
 import me.Tiernanator.Locker.Events.PlayerLockedBlockInteract;
-import me.Tiernanator.SQL.SQLServer;
+import me.Tiernanator.Utilities.SQL.SQLServer;
 
 public class LockerMain extends JavaPlugin {
 

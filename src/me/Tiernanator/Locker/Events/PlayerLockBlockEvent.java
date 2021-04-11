@@ -15,10 +15,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import me.Tiernanator.Colours.Colour;
 import me.Tiernanator.Locker.LockedBlock;
 import me.Tiernanator.Locker.LockerMain;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
+import me.Tiernanator.Utilities.Colours.Colour;
 import me.Tiernanator.Zoning.Zone.Zone;
 
 @SuppressWarnings("deprecation")

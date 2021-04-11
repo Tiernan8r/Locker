@@ -7,10 +7,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
-import me.Tiernanator.Colours.Colour;
 import me.Tiernanator.Locker.LockedBlock;
 import me.Tiernanator.Locker.LockerMain;
 import me.Tiernanator.Utilities.Blocks.MultiBlocks;
+import me.Tiernanator.Utilities.Colours.Colour;
 
 public class PlayerBreakLockedBlock implements Listener {
 
